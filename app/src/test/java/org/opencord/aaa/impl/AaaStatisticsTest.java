@@ -50,6 +50,7 @@ import java.nio.ByteBuffer;
 import static com.google.common.base.Preconditions.checkState;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.onosproject.net.NetTestTools.connectPoint;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -61,6 +62,7 @@ public class AaaStatisticsTest extends AaaTestBase {
 
     static final String BAD_IP_ADDRESS = "198.51.100.0";
 
+    static final Long ZERO = (long) 0;
     private final Logger log = getLogger(getClass());
     private AaaManager aaaManager;
     private AaaStatisticsManager aaaStatisticsManager;
@@ -310,8 +312,14 @@ private BasePacket fetchPacket(int index) {
         assertThat(stateMachine, notNullValue());
         assertThat(stateMachine.state(), is(StateMachine.STATE_AUTHORIZED));
 
-       // Counts the aaa Statistics count and displays in the log
-       countAaaStatistics();
+       //Check for increase of Stats
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getAcceptResponsesRx(), ZERO);
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getAccessRequestsTx(), ZERO);
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getChallengeResponsesRx(), ZERO);
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getDroppedResponsesRx(), ZERO);
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getInvalidValidatorsRx(), ZERO);
+       assertNotEquals(aaaStatisticsManager.getAaaStats().getPendingRequests(), ZERO);
+
 
     }
 
@@ -367,10 +375,20 @@ private BasePacket fetchPacket(int index) {
         // State machine should be in unauthorized state
         assertThat(stateMachine, notNullValue());
         assertThat(stateMachine.state(), is(StateMachine.STATE_UNAUTHORIZED));
+
         // Calculated the total round trip time
         aaaManager.aaaStatisticsManager.calculatePacketRoundtripTime();
-        // Counts the aaa Statistics count and displays in the log
-        countAaaStatistics();
+
+        //Check for increase of Stats
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getAccessRequestsTx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getChallengeResponsesRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getDroppedResponsesRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getInvalidValidatorsRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getPendingRequests(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getRejectResponsesRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getRequestRttMilis(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getUnknownTypeRx(), ZERO);
+
 
      }
 
@@ -408,25 +426,18 @@ private BasePacket fetchPacket(int index) {
 
         PacketContext context = new TestPacketContext(127L, inPacket, null, false);
         aaaManager.impl.handlePacketFromServer(context);
-        countAaaStatistics();
+
+        //Check for increase of Stats
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getAccessRequestsTx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getDroppedResponsesRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getPendingRequests(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getMalformedResponsesRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getRequestReTx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getRequestRttMilis(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getUnknownTypeRx(), ZERO);
+        assertNotEquals(aaaStatisticsManager.getAaaStats().getUnknownServerRx(), ZERO);
 
      }
-
-    // Calculates the AAA statistics count.
-    public void countAaaStatistics() {
-        assertThat(aaaStatisticsManager.getAaaStats().getAcceptResponsesRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getAccessRequestsTx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getChallengeResponsesRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getDroppedResponsesRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getInvalidValidatorsRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getMalformedResponsesRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getPendingRequests(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getRejectResponsesRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getRequestReTx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getRequestRttMilis(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getUnknownServerRx(), notNullValue());
-        assertThat(aaaStatisticsManager.getAaaStats().getUnknownTypeRx(), notNullValue());
-    }
 
     /*
      * Mock implementation of SocketBasedRadiusCommunicator class.
